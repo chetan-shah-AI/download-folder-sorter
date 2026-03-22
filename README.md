@@ -10,11 +10,12 @@ This project solves that by automatically detecting, classifying, and organizing
 
 # 2. Goals
 
-Automate file organization with zero manual effort
-Provide real-time or interval-based folder monitoring
-Ensure safe file movement with duplicate handling
-Maintain clean, extensible, and production-ready code structure
+Automate file organization with zero manual effort\
+Provide real-time or interval-based folder monitoring\
+Ensure safe file movement with duplicate handling\
+Maintain clean, extensible, and production-ready code structure\
 Enable easy configuration of file categorization rules
+Add a file level logger
 
 # 3. Features
 
@@ -77,7 +78,7 @@ Folder is created if it doesn't exist
 Duplicate handling:
 If file exists → append timestamp
 File is moved using shutil.move()
-Operation is logged (INFO / ERROR)
+Operation is logged (INFO / WARNING / ERROR)
 Loop repeats
 
 # 7. Setup Instructions
@@ -103,9 +104,11 @@ WORKDIR /app
 COPY . .
 
 CMD ["python", "main.py"]
+
 Build & Run
-docker build -t folder-sorter .
-docker run -v ~/Downloads:/app/Downloads folder-sorter
+docker build -t download-folder-sorter .
+docker run -v ~/Downloads/Download-sorter-content:/app/Downloads/Download-sorter-content  download-folder-sorter
+
 
 # 9. API Documentation
 
@@ -130,7 +133,6 @@ FILE_TYPE_MAP = {...}
 
 - Allows easy extension without touching core logic
 
-3. Polling vs Watchdog
 
 Used:
 
@@ -147,11 +149,16 @@ filename_YYYYMMDDHHMMSS.ext
 
 # 11. Trade-offs
 
-Decision	Trade-off
-Polling instead of event-based monitoring	Less efficient but simpler
-No database	Lightweight but no historical tracking
-Local file operations only	No remote/cloud support
-Basic logging	No log rotation or structured logging yet
+
+| Decision                          | Trade-off                                                                 |
+|----------------------------------|--------------------------------------------------------------------------|
+| Polling instead of event-based monitoring | Simpler to implement, but less efficient and may consume more resources |
+| No database                      | Lightweight and easy to set up, but lacks historical data tracking       |
+| Local file operations only       | Works offline and is simple, but does not support remote/cloud access    
+
+### Summary
+
+The current design prioritizes simplicity and minimal setup over scalability and advanced features. While this makes the system lightweight and easy to maintain, it introduces limitations in efficiency, observability, and extensibility.
 
 # 12. Error Handling & Logging
 
@@ -212,7 +219,6 @@ Metrics (Prometheus)
 # 15. Future Improvements
 -  Watchdog-based real-time monitoring
 - Configurable rules via YAML/JSON
-- CLI interface
 - GUI (Tkinter / Electron wrapper)
 - Undo functionality (restore moved files)
 - Cloud storage support (Google Drive, S3)

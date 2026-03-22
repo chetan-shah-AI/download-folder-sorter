@@ -3,6 +3,12 @@ import shutil
 from file_classfier import get_destination_folder
 import datetime
 import random
+import logging
+import logger  # ensures config is applied
+
+logger = logging.getLogger(__name__)
+
+
 
 def move_file_from_src_to_destination(file_path, downloads_folder):
     """Move file to appropriate folder."""
@@ -16,6 +22,7 @@ def move_file_from_src_to_destination(file_path, downloads_folder):
     
     # Handle duplicate file names by appending a timestamp
     if os.path.exists(dst_path):
+        logger.warning(f"File already exists: {dst_path}. Creating new file with timestamp.")
         timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 
         print(f"File already exists: {dst_path}. Creating new file with timestamp {timestamp} {file_name}.")
