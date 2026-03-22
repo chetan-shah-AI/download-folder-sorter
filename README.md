@@ -2,20 +2,21 @@
 
 An automated file organization tool that continuously monitors and categorizes files in a Downloads directory.
 
-###1. Problem Statement
+# 1. Problem Statement
 
 Over time, users accumulate large volumes of unorganized files in their Downloads folder, leading to reduced productivity and difficulty locating important documents. Manual organization is repetitive and inefficient.
 
 This project solves that by automatically detecting, classifying, and organizing files into structured directories.
 
-###2. Goals
+# 2. Goals
+
 Automate file organization with zero manual effort
 Provide real-time or interval-based folder monitoring
 Ensure safe file movement with duplicate handling
 Maintain clean, extensible, and production-ready code structure
 Enable easy configuration of file categorization rules
 
-###3. Features
+# 3. Features
 📂 Automatic file classification by extension
 🔁 Continuous monitoring (interval-based polling)
 🗂 Dynamic folder creation (if not exists)
@@ -25,7 +26,7 @@ Enable easy configuration of file categorization rules
 🛑 Safe processing (skips non-file entries)
 🔧 Modular architecture (separation of concerns)
 
-###4. Tech Stack
+# 4. Tech Stack
 
 Language:
 
@@ -43,7 +44,7 @@ Tooling:
 VS Code
 Git
 
-### 5. System Architecture
+# 5. System Architecture
 download-folder-sorter/
 │
 ├── main.py              # Entry point + monitoring loop
@@ -54,13 +55,14 @@ download-folder-sorter/
 ├── README.md
 └── docs/
     └── architecture.png  # (Add diagram here)
+
 Architecture Overview
 main.py orchestrates execution
 file_classifier.py determines destination folder
 move_file.py handles file operations
 config.py centralizes rules
 
-###6. Data Flow / Workflow
+# 6. Data Flow / Workflow
 Application starts (main.py)
 Target Downloads folder is resolved
 Infinite loop begins (polling every TIME_MONITORING_INTERVAL)
