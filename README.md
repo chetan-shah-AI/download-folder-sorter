@@ -18,14 +18,14 @@ Enable easy configuration of file categorization rules
 
 # 3. Features
 
-📂 Automatic file classification by extension
-🔁 Continuous monitoring (interval-based polling)
-🗂 Dynamic folder creation (if not exists)
-⚠️ Duplicate file handling using timestamps
-🧾 Logging of all operations (app.log)
-🧠 Config-driven file type mapping
-🛑 Safe processing (skips non-file entries)
-🔧 Modular architecture (separation of concerns)
+- Automatic file classification by extension
+- Continuous monitoring (interval-based polling)
+- Dynamic folder creation (if not exists)
+- Duplicate file handling using timestamps
+- Logging of all operations (app.log)
+- Config-driven file type mapping
+- Safe processing (skips non-file entries)
+- Modular architecture (separation of concerns)
 
 # 4. Tech Stack
 
@@ -109,7 +109,7 @@ docker run -v ~/Downloads:/app/Downloads folder-sorter
 
 # 9. API Documentation
 
-❌ Not applicable
+-  Not applicable
 
 This is a local automation tool, not a service-based system.
 
@@ -123,12 +123,12 @@ classification
 movement
 configuration
 
-➡️ Improves maintainability and scalability
+-  Improves maintainability and scalability
 
 2. Config-Driven Rules (config.py)
 FILE_TYPE_MAP = {...}
 
-➡️ Allows easy extension without touching core logic
+- Allows easy extension without touching core logic
 
 3. Polling vs Watchdog
 
@@ -136,14 +136,14 @@ Used:
 
 while True + time.sleep()
 
-➡️ Simpler, fewer dependencies
-➡️ Easier for MVP
+-  Simpler, fewer dependencies
+-  Easier for MVP
 
 4. Timestamp-based Duplicate Handling
 filename_YYYYMMDDHHMMSS.ext
 
-➡️ Prevents overwriting
-➡️ Keeps original files intact
+- Prevents overwriting
+- Keeps original files intact
 
 # 11. Trade-offs
 
@@ -210,11 +210,11 @@ Structured logging (JSON logs)
 Metrics (Prometheus)
 
 # 15. Future Improvements
-✅ Watchdog-based real-time monitoring
-✅ Configurable rules via YAML/JSON
-✅ CLI interface
-✅ GUI (Tkinter / Electron wrapper)
-✅ Undo functionality (restore moved files)
-✅ Cloud storage support (Google Drive, S3)
-✅ File content-based classification (ML/NLP)
-✅ Log rotation & monitoring dashboard
+-  Watchdog-based real-time monitoring
+- Configurable rules via YAML/JSON
+- CLI interface
+- GUI (Tkinter / Electron wrapper)
+- Undo functionality (restore moved files)
+- Cloud storage support (Google Drive, S3)
+- File content-based classification (ML/NLP)
+- Log rotation & monitoring dashboard
