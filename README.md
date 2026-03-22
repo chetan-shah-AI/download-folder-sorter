@@ -17,6 +17,7 @@ Maintain clean, extensible, and production-ready code structure
 Enable easy configuration of file categorization rules
 
 # 3. Features
+
 📂 Automatic file classification by extension
 🔁 Continuous monitoring (interval-based polling)
 🗂 Dynamic folder creation (if not exists)
@@ -45,24 +46,25 @@ VS Code
 Git
 
 # 5. System Architecture
+
 download-folder-sorter/
-│
-├── main.py              # Entry point + monitoring loop
-├── move_file.py         # File movement + duplicate handling
-├── file_classifier.py   # File type classification logic
-├── config.py            # Configuration (extensions, intervals)
-├── logger.py            # Logging setup (optional abstraction)
-├── README.md
-└── docs/
-    └── architecture.png  # (Add diagram here)
+
+── main.py              # Entry point + monitoring loop
+── move_file.py         # File movement + duplicate handling
+── file_classifier.py   # File type classification logic
+── config.py            # Configuration (extensions, intervals)
+── logger.py            # Logging setup (optional abstraction)
+── README.md
 
 Architecture Overview
+
 main.py orchestrates execution
 file_classifier.py determines destination folder
 move_file.py handles file operations
 config.py centralizes rules
 
 # 6. Data Flow / Workflow
+
 Application starts (main.py)
 Target Downloads folder is resolved
 Infinite loop begins (polling every TIME_MONITORING_INTERVAL)
@@ -78,18 +80,22 @@ File is moved using shutil.move()
 Operation is logged (INFO / ERROR)
 Loop repeats
 
-###7. Setup Instructions
+# 7. Setup Instructions
+
 1. Clone Repository
 git clone <repo-url>
 cd download-folder-sorter
-2. Create Virtual Environment
+
+3. Create Virtual Environment
 python -m venv venv
 source venv/bin/activate   # macOS/Linux
 venv\Scripts\activate      # Windows
-3. Run Application
+
+5. Run Application
 python main.py
 
-###8. Docker Setup
+# 8. Docker Setup
+
 Dockerfile (example)
 FROM python:3.10
 
@@ -101,13 +107,14 @@ Build & Run
 docker build -t folder-sorter .
 docker run -v ~/Downloads:/app/Downloads folder-sorter
 
-###9. API Documentation
+# 9. API Documentation
 
 ❌ Not applicable
 
 This is a local automation tool, not a service-based system.
 
-###10. Design Decisions
+# 10. Design Decisions
+
 1. Modular Architecture
 
 Separated responsibilities into:
@@ -138,14 +145,16 @@ filename_YYYYMMDDHHMMSS.ext
 ➡️ Prevents overwriting
 ➡️ Keeps original files intact
 
-###11. Trade-offs
+# 11. Trade-offs
+
 Decision	Trade-off
 Polling instead of event-based monitoring	Less efficient but simpler
 No database	Lightweight but no historical tracking
 Local file operations only	No remote/cloud support
 Basic logging	No log rotation or structured logging yet
 
-####12. Error Handling & Logging
+# 12. Error Handling & Logging
+
 Error Handling
 Wrapped file operations in try/except
 Prevents full system crash on single failure
@@ -162,10 +171,12 @@ Example:
 
 2026-03-20 10:00:00 - INFO - Moved file: example.pdf
 
-###13. Testing
+# 13. Testing
+
 Current State
 Manual testing via real file movement
 Suggested Improvements
+
 Unit tests for:
 file classification
 duplicate handling
@@ -177,14 +188,12 @@ Run tests:
 
 pytest
 
-###14. Scaling Strategy
+# 14. Scaling Strategy
 
 To evolve this into production-grade system:
 
 1. Replace Polling with Event-Based Monitoring
-
 Use:
-
 watchdog for real-time file detection
 2. Add Persistent Storage
 SQLite / PostgreSQL
@@ -200,7 +209,7 @@ Use threading or async for large directories
 Structured logging (JSON logs)
 Metrics (Prometheus)
 
-###15. Future Improvements
+# 15. Future Improvements
 ✅ Watchdog-based real-time monitoring
 ✅ Configurable rules via YAML/JSON
 ✅ CLI interface
