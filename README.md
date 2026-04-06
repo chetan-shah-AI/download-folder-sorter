@@ -1,122 +1,580 @@
 # Download Folder Sorter
 
-An automated file organization tool that continuously monitors and categorizes files in a Downloads directory.
+# 0. What is this project
+
+This project is an automated file organization system that continuously monitors a directory (e.g. Downloads folder) and sorts files into categorized folders based on file extensions.
+
+It is designed to reduce clutter, improve productivity, and enforce consistent file organization with minimal user intervention.
 
 # 1. Problem Statement
 
-Over time, users accumulate large volumes of unorganized files in their Downloads folder, leading to reduced productivity and difficulty locating important documents. Manual organization is repetitive and inefficient.
+Modern users accumulate large numbers of files in their Downloads folder, leading to:
 
-This project solves that by automatically detecting, classifying, and organizing files into structured directories.
+Poor organization
+Difficulty locating files
+Reduced productivity
+Manual sorting overhead
+
+There is a need for an automated, scalable, and configurable system that continuously organizes files in real time.
 
 # 2. Goals
 
-Automate file organization with zero manual effort\
-Provide real-time or interval-based folder monitoring\
-Ensure safe file movement with duplicate handling\
-Maintain clean, extensible, and production-ready code structure\
-Enable easy configuration of file categorization rules
-Add a file level logger
+Automatically categorize files based on extension
+Continuously monitor a directory in real-time
+Ensure fault tolerance during file operations
+Provide clear logging for observability
+Support containerized deployment via Docker
+Handle edge cases like duplicate filenames
 
-# 3. Features
+# 3. Real Life Business Cases where this project would help and why
 
-- Automatic file classification by extension
-- Continuous monitoring (interval-based polling)
-- Dynamic folder creation (if not exists)
+1. Enterprise Workstations
+
+Employees frequently download reports, documents, and media files.
+- Saves time spent organizing files manually
+- Improves compliance and file structure consistency
+
+2. Finance / Legal Teams
+
+Handling large volumes of PDFs and documents.
+- Automatically groups sensitive documents
+- Reduces risk of misplaced files
+
+3. Creative Teams
+
+Designers and editors deal with images/videos.
+- Automatically organizes assets (images, videos)
+- Improves workflow efficiency
+
+4. Developers
+
+Frequent downloads of code, archives, and docs.
+-Keeps workspace clean
+-Separates code, archives, and documents automatically
+
+
+# 4. Feature → File Mapping
+
+- Automatic file classification
+
+File: file_classfier.py
+
+Function: get_destination_folder()
+Uses FILE_TYPE_MAP to determine where files go
+
+- Real-time folder monitoring
+
+File: main.py
+
+Infinite loop:
+while True:
+    time.sleep(TIME_MONITORING_INTERVAL)
+    organize_downloads(DOWNLOADS_FOLDER)
+Continuously checks for new files every 10 seconds
+
+- Configurable file type mappings
+
+File: config.py
+
+FILE_TYPE_MAP dictionary
+Easily extendable without changing core logic
+
 - Duplicate file handling using timestamps
-- Logging of all operations (app.log)
-- Config-driven file type mapping
-- Safe processing (skips non-file entries)
-- Modular architecture (separation of concerns)
 
-# 4. Tech Stack
+File: move_file.py
 
-Language:
+Logic:
+if os.path.exists(dst_path):
+    timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    dst_path = dst_path.replace(".", f"_{timestamp}.")
 
-Python 3.x
+- Logging for traceability
 
-Libraries:
+Files:
 
-os – file system operations
-shutil – file movement
-datetime – timestamp handling
-logging – structured logging
+logger.py → logging configuration
+Used across:
+file_classfier.py
+main.py
+move_file.py
 
-Tooling:
+- Docker support for portability
 
-VS Code
-Git
+File: Dockerfile
 
-# 5. System Architecture
+FROM python:3.12.9
+WORKDIR /app
+COPY . .
+CMD ["python", "main.py"]
 
-download-folder-sorter/
+- CLI argument support for custom folders
 
-── main.py              # Entry point + monitoring loop
-── move_file.py         # File movement + duplicate handling
-── file_classifier.py   # File type classification logic
-── config.py            # Configuration (extensions, intervals)
-── logger.py            # Logging setup (optional abstraction)
-── README.md
+File: main.py
 
-Architecture Overview
+Uses argparse:
+argparse.add_argument("--sort_folder", type=str, ...)
+Allows user to pass custom directory
 
-main.py orchestrates execution
-file_classifier.py determines destination folder
-move_file.py handles file operations
-config.py centralizes rules
+# 5. Tech Stack
+
+- Python 3.12
+
+What it is:
+The latest stable version of Python used to build the application.
+
+Why it was used:
+
+Clean and readable syntax → faster development
+Strong standard library → no need for external dependencies
+Cross-platform support → works on Windows, macOS, Linux
+Improved performance and typing features in newer versions
+
+- Docker
+
+What it is:
+A containerization tool that packages the application with its environment.
+
+Why it was used:
+
+Ensures consistent runtime across all machines
+Eliminates “it works on my machine” issues
+Simplifies deployment and onboarding
+Makes the app portable and scalable
+
+- Standard Libraries
+
+   - os
+
+What it does:
+Provides interaction with the operating system (files, directories, paths).
+
+Why it was used:
+
+Traverse directories (os.listdir)
+Build file paths safely (os.path.join)
+Check file types (os.path.isfile)
+Expand user paths (os.path.expanduser)
+
+Essential for file system operations in a cross-platform way.
+
+ - shutil
+
+What it does:
+High-level file operations like moving and copying files.
+
+Why it was used:
+
+Move files between directories (shutil.move)
+Handles file operations more reliably than manual implementations
+
+Simplifies file manipulation and reduces error-prone logic.
+
+- logging
+
+What it does:
+Provides a flexible framework for logging application events.
+
+Why it was used:
+
+Track file processing steps
+Capture errors without crashing the app
+Provide observability for debugging and monitoring
+
+Critical for production-grade systems.
+
+- argparse
+
+What it does:
+Handles command-line arguments.
+
+Why it was used:
+
+Allows users to specify a custom folder at runtime
+Makes the application flexible and reusable
+Avoids hardcoding paths
+
+Improves usability and configurability.
+
+- datetime
+
+What it does:
+Handles date and time operations.
+
+Why it was used:
+
+Generate timestamps for duplicate file handling
+Ensures files are not overwritten
+
+Enables safe and deterministic file naming.
+
+# 6. System Architecture
+
+                +----------------------+
+                |   User Directory     |
+                | (Downloads Folder)   |
+                +----------+-----------+
+                           |
+                           v
+                +----------------------+
+                |   main.py (Watcher)  |
+                |  Polls every 10 sec  |
+                +----------+-----------+
+                           |
+                           v
+                +----------------------+
+                | file_classifier.py   |
+                | Maps file → category |
+                +----------+-----------+
+                           |
+                           v
+                +----------------------+
+                | move_file.py         |
+                | Moves & renames file|
+                +----------+-----------+
+                           |
+                           v
+                +----------------------+
+                | Organized Folders    |
+                +----------------------+
 
 # 6. Data Flow / Workflow
 
-Application starts (main.py)
-Target Downloads folder is resolved
-Infinite loop begins (polling every TIME_MONITORING_INTERVAL)
-Files are scanned using os.listdir()
-Each file:
-Checked if it is a valid file (os.path.isfile)
-Passed to classifier (get_destination_folder)
-Destination folder is determined
-Folder is created if it doesn't exist
-Duplicate handling:
-If file exists → append timestamp
-File is moved using shutil.move()
-Operation is logged (INFO / WARNING / ERROR)
-Loop repeats
+ - # 1. Application starts and reads CLI argument (--sort_folder)
 
-# 7. Setup Instructions
+📍 File: main.py
 
-1. Clone Repository
-git clone <repo-url>
-cd download-folder-sorter
+Where it starts:
 
-3. Create Virtual Environment
-python -m venv venv
-source venv/bin/activate   # macOS/Linux
-venv\Scripts\activate      # Windows
+Execution begins when this file is run:
 
-5. Run Application
 python main.py
+Relevant code:
+argparse = argparse.ArgumentParser(...)
+argparse.add_argument("--sort_folder", type=str, default=...)
+args = argparse.parse_args()
 
-# 8. Docker Setup
+DOWNLOADS_FOLDER = args.sort_folder
 
-Dockerfile (example)
-FROM python:3.10
+What it does:
+Creates a CLI interface
+Reads the folder path from the user
+Falls back to a default Downloads path if none is provided
 
-WORKDIR /app
-COPY . .
+- # 2. Enters infinite loop (every 10 seconds)
 
-CMD ["python", "main.py"]
+📍 File: main.py
 
-Build & Run
-docker build -t download-folder-sorter .
-docker run -v ~/Downloads/Download-sorter-content:/app/Downloads/Download-sorter-content  download-folder-sorter
+Code:
+while True:
+    logger.info("Checking for new files in the downloads folder")
+    time.sleep(TIME_MONITORING_INTERVAL)
+    organize_downloads(DOWNLOADS_FOLDER)
+What it does:
+Runs forever (continuous monitoring)
+Waits 10 seconds between each cycle
+Calls the main processing function
+
+ - # 3. Scans directory for files
+
+📍 File: main.py
+📍 Function: organize_downloads()
+
+Code:
+for file_name in os.listdir(downloads_folder):
+What it does:
+Reads all files in the target directory
+Iterates through each file
+
+- # 4. For each file → identify extension
+
+📍 File: file_classfier.py
+📍 Function: get_destination_folder()
+
+Code:
+_, ext = os.path.splitext(file_name.lower())
+What it does:
+Extracts file extension (e.g. .jpg, .pdf)
+Normalizes it to lowercase
+
+- # 5. Map to destination folder
+
+📍 File: file_classfier.py
+
+Code:
+for folder, extensions in FILE_TYPE_MAP.items():
+    if ext in extensions:
+        return folder
+What it does:
+Loops through config mapping
+Matches extension → folder name
+Returns category (e.g. "Pictures", "PDFs")
+Defaults to "Others" if no match
+
+- # 6. Move file
+
+📍 File: move_file.py
+📍 Function: move_file_from_src_to_destination()
+
+Code:
+dst_folder = os.path.join(downloads_folder, folder_name)
+os.makedirs(dst_folder, exist_ok=True)
+
+shutil.move(file_path, dst_path)
+What it does:
+Creates destination folder if it doesn’t exist
+Moves file into correct category
+
+- # 7. Handle duplicates using timestamp
+
+📍 File: move_file.py
+
+Code:
+if os.path.exists(dst_path):
+    timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    dst_path = dst_path.replace(".", f"_{timestamp}.")
+What it does:
+Checks if file already exists
+Adds timestamp to filename
+Prevents overwriting
+
+- # 8. Log all operations
+
+📍 Files: logger.py, used across all modules
+
+Setup:
+logging.basicConfig(
+    filename="app2.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+Example usage:
+logger.info("Moved file: {file_name}")
+logger.error("Error processing file...")
+What it does:
+Tracks system behavior
+Logs successes, decisions, and errors
+Writes everything to app2.log
+
+# Big Picture Flow (How Everything Connects)
+
+main.py (entry point)
+   ↓
+parse CLI args
+   ↓
+while True loop
+   ↓
+organize_downloads()
+   ↓
+for each file
+   ↓
+file_classfier.py → determine folder
+   ↓
+move_file.py → move + handle duplicates
+   ↓
+logging → record everything
+
+# Key Insight
+
+main.py is the orchestrator → controls the lifecycle
+file_classfier.py is pure logic → determines categorization
+move_file.py is execution layer → performs file operations
+config.py is configuration layer → defines behavior without code changes
+logger.py is cross-cutting concern → observability
+
+# This separation follows clean architecture principles:
+
+Low coupling
+High cohesion
+Easy to extend and test
 
 
-# 9. API Documentation
 
--  Not applicable
+# 7. Design Decisions
 
-This is a local automation tool, not a service-based system.
+# - Polling vs Event-Based Monitoring
 
-# 10. Design Decisions
+**What it means:**
+
+- Your app **checks the folder every 10 seconds** using `time.sleep()`
+- Instead of instantly reacting when a file appears
+
+**Why you chose it:**
+
+- Easier to build
+- Works the same on all operating systems
+- Slight delay (up to 10 seconds)
+
+**Where in the code :**: main.py
+
+while True:
+    logger.info("Checking for new files in the downloads folder")
+    time.sleep(TIME_MONITORING_INTERVAL)
+    organize_downloads(DOWNLOADS_FOLDER)
+    
+What this does:
+while True → keeps the program running forever
+time.sleep(10) → waits 10 seconds
+Then checks the folder again
+
+ This is polling = checking repeatedly instead of reacting instantly
+
+# Simple version:
+
+- Instead of watching constantly, the app checks the folder every few seconds.
+
+# - Config-Driven Classification
+
+**What it means:**
+
+- File types (like `.jpg`, `.pdf`) are stored in `config.py`
+
+**Why you chose it:**
+
+- You can **add new file types without changing code logic**
+- Just update the config file
+
+**Where in the code :**: config.py
+
+FILE_TYPE_MAP = {
+    "Pictures": [".jpg", ".jpeg", ".png", ".gif"],
+    "Movies": [".mov", ".mp4", ".mkv"],
+    ...
+}
+Used in: file_classfier.py
+
+for folder, extensions in FILE_TYPE_MAP.items():
+    if ext in extensions:
+        return folder
+        
+What this does:
+Stores file rules in one place
+Code reads from config instead of hardcoding
+
+Change behavior by editing config.py, not logic
+
+# Simple version:
+
+> Rules for sorting files are stored in one place, so they’re easy to change.
+
+# - Modular Architecture
+
+**What it means:**
+
+* Your code is split into separate files, each with one job:
+
+| File                | Responsibility         |
+| ------------------- | ---------------------- |
+| `file_classfier.py` | Decides where files go |
+| `move_file.py`      | Moves the files        |
+| `main.py`           | Runs the program       |
+| `logger.py`         | Handles logging        |
+
+**Why you chose it:**
+
+* Easier to understand
+* Easier to debug
+* Easier to extend
+
+Simple version:
+
+> Each file does one thing well instead of everything being in one big file.
+
+# - Logging Centralization
+
+**What it means:**
+
+* Logging is set up in one place: `logger.py`
+
+**Why you chose it:**
+
+* All logs follow the same format
+* No need to repeat logging setup in every file
+* Easier to manage and update
+
+**Where in the code :**: logger.py
+
+logging.basicConfig(
+    filename="app2.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+
+Used everywhere:
+
+import logger  # activates config
+logger = logging.getLogger(__name__)
+
+Example usage:
+
+logger.info("Moved file")
+logger.error("Error processing file")
+
+What this does:
+All files use the same logging setup
+Logs go to the same file (app2.log)
+Same format everywhere
+
+Simple version:
+
+All logs are controlled from one file, so everything stays consistent.”
+
+
+# Super Simple Summary
+
+* Polling → checks every few seconds
+* Config-driven → easy to change rules
+* Modular → code is split into clear parts
+* Central logging → all logs handled in one place
+.
+
+
+# 8. Error Handling and Logging
+
+**Where in the code :**: main.py
+
+Python
+
+for file_name in os.listdir(downloads_folder):
+    try:
+        file_path = os.path.join(downloads_folder, file_name)
+
+        if os.path.isfile(file_path):
+            move_file_from_src_to_destination(file_path, downloads_folder)
+            logger.info(f"Moved file: {file_name}")
+
+    except Exception as e:
+        print(f"Error processing {file_name}: {e}")
+        logger.error(f"Error processing {file_name}: {e}")
+
+What this does:
+Wraps file operations in a try/except block
+If something goes wrong (e.g. file locked, permission error):
+It does NOT crash the program
+It logs the error and continues
+
+Simple explanation:
+
+“If one file fails, the program keeps running instead of stopping.”
+
+# Logging Strategy
+
+**Where in the code :**: logger.py
+
+Python
+
+logging.basicConfig(
+    filename="app2.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+What this does:
+Saves logs to a file called app2.log
+Logs include:
+Time
+File/module name
+Log level (INFO, ERROR, etc.)
+
+# 9. Challenges & Solutions
 
 1. Modular Architecture
 
