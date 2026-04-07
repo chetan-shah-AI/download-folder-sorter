@@ -576,67 +576,168 @@ Log level (INFO, ERROR, etc.)
 
 # 9. Challenges & Solutions
 
-1. Modular Architecture
+# - 1. Handling Duplicate Files
+- Problem
 
-Separated responsibilities into:
+When moving files, if a file with the same name already existed in the destination folder, it would:
 
-classification
-movement
-configuration
+Overwrite the existing file
+Or cause an error
+- Solution
 
--  Improves maintainability and scalability
+Append a timestamp to the filename to make it unique.
 
-2. Config-Driven Rules (config.py)
-FILE_TYPE_MAP = {...}
+- Where this is fixed: move_file.py
+if os.path.exists(dst_path):
+    logger.warning(f"File already exists: {dst_path}. Creating new file with timestamp.")
+    
+    timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 
-- Allows easy extension without touching core logic
+    dst_path = dst_path.replace(".", f"_{timestamp}.")
+- What this does:
+Checks if file already exists
+Generates a unique timestamp
+Renames the file before moving
 
+- Prevents overwriting and preserves all files
 
-Used:
+# - 2. File Access Errors
+- Problem
 
-while True + time.sleep()
+Sometimes files:
 
--  Simpler, fewer dependencies
--  Easier for MVP
+Are still downloading
+Are locked by another application
 
-4. Timestamp-based Duplicate Handling
-filename_YYYYMMDDHHMMSS.ext
+This can cause the program to crash.
 
-- Prevents overwriting
-- Keeps original files intact
+- Solution
 
-# 11. Trade-offs
+Wrap file operations in try/except so the system continues running.
 
+- Where this is fixed: main.py
+for file_name in os.listdir(downloads_folder):
+    try:
+        file_path = os.path.join(downloads_folder, file_name)
 
-| Decision                          | Trade-off                                                                 |
-|----------------------------------|--------------------------------------------------------------------------|
-| Polling instead of event-based monitoring | Simpler to implement, but less efficient and may consume more resources |
-| No database                      | Lightweight and easy to set up, but lacks historical data tracking       |
-| Local file operations only       | Works offline and is simple, but does not support remote/cloud access    
+        if os.path.isfile(file_path):
+            move_file_from_src_to_destination(file_path, downloads_folder)
+            logger.info(f"Moved file: {file_name}")
 
-### Summary
+    except Exception as e:
+        print(f"Error processing {file_name}: {e}")
+        logger.error(f"Error processing {file_name}: {e}")
+- What this does:
+Catches any runtime error
+Logs the issue
+Continues processing other files
 
-The current design prioritizes simplicity and minimal setup over scalability and advanced features. While this makes the system lightweight and easy to maintain, it introduces limitations in efficiency, observability, and extensibility.
+- Prevents a single failure from stopping the whole system
 
-# 12. Error Handling & Logging
+- 3. Cross-Platform Path Issues
+- Problem
 
-Error Handling
-Wrapped file operations in try/except
-Prevents full system crash on single failure
-except Exception as e:
-    logging.error(...)
-Logging
-Logs written to app.log
-Includes:
+Hardcoded paths (e.g. C:\Users\...) break on:
+
+macOS
+Linux
+- Solution
+
+Use dynamic, OS-independent paths and CLI input.
+
+- Where this is fixed: main.py
+argparse.add_argument(
+    "--sort_folder",
+    type=str,
+    default=os.path.join(os.path.expanduser("~"), "Downloads/Download-sorter-content"),
+)
+ - What this does:
+os.path.expanduser("~") → gets the user’s home directory (works on all OS)
+os.path.join() → builds safe paths
+CLI argument → allows custom folder input
+
+- Makes the application portable across environments
+
+# 11. Trade-offs(With Alterntives) 
+
+This solution prioritizes simplicity, portability, and ease of setup, while accepting some limitations. Below are the key design decisions, their trade-offs, and what could have been done instead.
+
+- # Polling instead of event-based monitoring
+
+- What I chose:
+Use a loop with time.sleep() to check the folder every 10 seconds.
+
+- Why this is good:
+
+Simple to implement
+Cross-platform (no OS-specific dependencies)
+Easy to debug
+
+- Trade-off:
+
+Less efficient (keeps checking even when nothing changes)
+Small delay before detecting new files
+
+ - What I could have done instead:
+
+Use an event-driven approach with libraries like watchdog
+React instantly to file system changes
+Reduce CPU usage and improve responsiveness
+
+- Better for production systems where performance matters
+
+- # No database
+
+ - What I chose:
+No persistent storage — the app processes files without saving history.
+
+- Why this is good:
+
+Lightweight
+No setup or external dependencies
+Faster to build and run
+
+- Trade-off:
+
+No history of processed files
+No audit trail or reporting
+Cannot track failures over time
+
+- What I could have done instead:
+
+Add a lightweight database (e.g. SQLite)
+Store:
+processed files
 timestamps
-log level
-messages
+errors
 
-Example:
+- Enables analytics, debugging, and auditability
 
-2026-03-20 10:00:00 - INFO - Moved file: example.pdf
+- # Local file operations only
 
-# 13. Testing
+- What I chose:
+Operate only on local file systems.
+
+- Why this is good:
+
+Simple and fast
+Works offline
+No authentication or cloud setup required
+
+- Trade-off:
+
+Cannot process files from cloud storage (e.g. S3, Google Drive)
+Limited scalability across multiple systems
+
+- What I could have done instead:
+
+Integrate with cloud storage APIs (AWS S3, GCP, Azure)
+Use abstraction layers (e.g. boto3)
+Support remote file processing
+
+- Makes the system scalable and usable in enterprise environments
+
+# 12. Testing
 
 Current State
 Manual testing via real file movement
